@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Parquet.Data;
 using Parquet.Data.Rows;
@@ -99,6 +100,24 @@ namespace Parquet
          }
 
          return result;
+      }
+
+      /// <summary>
+      /// Reads the first row group as rows
+      /// </summary>
+      /// <param name="reader">Open reader</param>
+      /// <returns></returns>
+      public static IEnumerable<Row> ReadRows(this ParquetReader reader)
+      {
+         for (int i = 0; i < reader.RowGroupCount; i++)
+         {
+            using ParquetRowGroupReader rowGroupReader = reader.OpenRowGroupReader(i);
+            DataColumn[] allData = reader.Schema.GetDataFields().Select(df => rowGroupReader.ReadColumn(df)).ToArray();
+
+            var converter = new DataColumnsToRowsConverter(reader.Schema, allData, rowGroupReader.RowCount);
+            foreach (Row row in converter.ConvertToRows())
+               yield return row;
+         }
       }
 
       /// <summary>

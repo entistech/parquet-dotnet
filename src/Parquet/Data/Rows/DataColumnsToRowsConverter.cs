@@ -43,6 +43,20 @@ namespace Parquet.Data.Rows
          return result;
       }
 
+      public IEnumerable<Row> ConvertToRows()
+      {
+         var pathToColumn = new Dictionary<string, LazyColumnEnumerator>();
+         foreach (DataColumn column in _columns)
+         {
+            var en = new LazyColumnEnumerator(column);
+            en.Reset();
+
+            pathToColumn[column.Field.Path] = en;
+         }
+         while (TryBuildNextRow(_schema.Fields, pathToColumn, out Row row))
+            yield return row;
+      }
+
       private void ColumnsToRows(IReadOnlyCollection<Field> fields, Dictionary<string, LazyColumnEnumerator> pathToColumn, List<Row> result, long rowCount)
       {
          for(int rowIndex = 0; rowCount == -1 || rowIndex < rowCount; rowIndex++)
