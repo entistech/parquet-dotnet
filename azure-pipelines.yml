@@ -15,24 +15,12 @@ variables:
   buildConfiguration: 'Release'
 
 steps:
-#- task: UseDotNet@2
-#  displayName: 'Install .NET Core SDK'
-#  inputs:
-#    version: 6.0.x
-#    performMultiLevelLookup: true
-
 - task: DotNetCoreCLI@2
-  displayName: 'dotnet restore'
-  inputs:
-    command: 'restore'
-    feedsToUse: 'select'
-    vstsFeed: '/3c5c1764-9633-49c7-8aae-7e8c3bc37469'
-
 - task: DotNetCoreCLI@2
   displayName: 'dotnet build'
   inputs:
     command: 'build'
-    arguments: '--no-restore'
+    arguments: './src/Parquet/Parquet.csproj'
 
 - task: DotNetCoreCLI@2
   displayName: 'dotnet pack'
