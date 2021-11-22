@@ -1,7 +1,7 @@
-# ASP.NET
-# Build and test ASP.NET projects.
-# Add steps that publish symbols, save build artifacts, deploy, and more:
-# https://docs.microsoft.com/azure/devops/pipelines/apps/aspnet/build-aspnet-4
+# ASP.NET Core (.NET Framework)
+# Build and test ASP.NET Core projects targeting the full .NET Framework.
+# Add steps that publish symbols, save build artifacts, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
 
 trigger:
 - master
@@ -15,24 +15,23 @@ variables:
   buildConfiguration: 'Release'
 
 steps:
-#- task: UseDotNet@2
-#  displayName: 'Install .NET Core SDK'
-#  inputs:
-#    version: 6.0.x
-#    performMultiLevelLookup: true
+- task: NuGetToolInstaller@1
 
-- task: DotNetCoreCLI@2
-  displayName: 'dotnet restore'
+- task: NuGetCommand@2
   inputs:
-    command: 'restore'
-    feedsToUse: 'select'
-    vstsFeed: '/3c5c1764-9633-49c7-8aae-7e8c3bc37469'
+    restoreSolution: '$(solution)'
 
-- task: DotNetCoreCLI@2
-  displayName: 'dotnet build'
+- task: VSBuild@1
   inputs:
-    command: 'build'
-    arguments: '--no-restore'
+    solution: '$(solution)'
+    msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:DesktopBuildPackageLocation="$(build.artifactStagingDirectory)\WebApp.zip" /p:DeployIisAppPath="Default Web Site"'
+    platform: '$(buildPlatform)'
+    configuration: '$(buildConfiguration)'
+
+- task: VSTest@2
+  inputs:
+    platform: '$(buildPlatform)'
+    configuration: '$(buildConfiguration)'
 
 - task: DotNetCoreCLI@2
   displayName: 'dotnet pack'
